@@ -1,24 +1,31 @@
 import React from 'react';
 import { useSignInWithEmailAndPassword, useSignInWithGoogle } from 'react-firebase-hooks/auth';
 import { useForm } from "react-hook-form";
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import auth from '../../firebase.init';
+import Loading from '../Shared/Loading';
 const Login = () => {
 
     const [signInWithGoogle, gUser, gLoading, gError] = useSignInWithGoogle(auth);
     const { register, formState: { errors }, handleSubmit } = useForm();
-
-
+  
     const [
-        signInWithEmailAndPassword,
-        user,
-        loading,
-        error,
-      ] = useSignInWithEmailAndPassword(auth);
+        signInWithEmailAndPassword,user,loading, error, ] = useSignInWithEmailAndPassword(auth);
+     
+        let SignInError;
+        let navigate = useNavigate();
+        let location = useLocation();
+        let from = location.state?.from?.pathname || "/";
+        
+      if( loading || gLoading){
 
-      if(loading || gLoading){
+ return <Loading></Loading>    
 
- return <button class="btn loading">loading</button>    
+      }
 
+      if(error||gError){
+
+      SignInError=<p className='text-red-500'>{error?.message || gError?.message}</p>
       }
 
     const onSubmit = data =>{
@@ -27,8 +34,9 @@ const Login = () => {
         signInWithEmailAndPassword(data.email,data.password);
     } 
 
-    if(gUser){
-        console.log(gUser);
+    if( user||gUser){
+        navigate(from, { replace: true });
+
     }
 
     return (
@@ -91,10 +99,12 @@ const Login = () => {
 
                     </label>
                     </div>
-
+                     {SignInError}
                     <input className='btn text-white w-full max-w-xs btn-md'  value="login" type="submit" />
+                    </form>
 
-                        </form>
+                    <p><small>New to Doctor Portal? <Link className='text-primary' to='/signup'>Create An Account</Link></small> </p>
+
                     <div className="divider">OR</div>
                     <button onClick={() => signInWithGoogle()}
                    className="btn btn-outline">Continue with Google</button>
